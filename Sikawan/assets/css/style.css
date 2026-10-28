@@ -1,0 +1,241 @@
+/* assets/css/style.css - Warung Sambel Orek Tugu 17 */
+
+:root {
+    --oranye:        #f97316;
+    --oranye-tua:    #c2410c;
+    --oranye-muda:   #fff1e6;
+    --bg:            #fdf8f3;
+    --putih:         #ffffff;
+    --teks:          #1f2430;
+    --teks-redup:    #6b7280;
+    --garis:         #e8e1d9;
+    --error-bg:      #fef2f2;
+    --error-teks:    #b91c1c;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    color: var(--teks);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Ikon garis (stroke) dipakai di seluruh aplikasi */
+.ikon {
+    width: 18px; height: 18px; flex: none;
+    fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ============================================================
+   HALAMAN LOGIN
+   ============================================================ */
+.halaman-login { background: var(--bg); min-height: 100vh; }
+
+.split { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+
+/* ---- Panel kiri (foto) ---- */
+.hero {
+    position: relative; display: flex; flex-direction: column; justify-content: space-between;
+    padding: 32px 40px 36px; color: #fff; overflow: hidden;
+    background:
+        linear-gradient(180deg, rgba(35, 18, 8, .35) 0%, rgba(35, 18, 8, .25) 40%, rgba(30, 14, 5, .92) 100%),
+        url('../img/login-bg.jpg') center / cover no-repeat,
+        radial-gradient(120% 90% at 30% 20%, #8a5a34 0%, #4a2a14 55%, #25130a 100%);
+}
+.hero__merek { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; }
+.hero__logo {
+    width: 36px; height: 36px; border-radius: 10px; background: #fff; color: var(--oranye);
+    display: grid; place-items: center;
+}
+.hero__logo .ikon { width: 20px; height: 20px; }
+
+.hero__pil {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0 0 20px;
+    padding: 7px 14px; font-size: 12px; border-radius: 999px;
+    background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .25);
+    backdrop-filter: blur(6px);
+}
+.hero__pil .ikon { width: 13px; height: 13px; }
+.hero__judul { margin: 0 0 16px; font-size: 40px; line-height: 1.15; font-weight: 700; letter-spacing: -.01em; }
+.hero__sub { margin: 0 0 16px; font-size: 14px; color: rgba(255, 255, 255, .9); }
+.hero__garis { display: block; width: 44px; height: 3px; border-radius: 2px; background: var(--oranye); margin-bottom: 16px; }
+.hero__teks { margin: 0; max-width: 340px; font-size: 12.5px; color: rgba(255, 255, 255, .78); }
+
+.login {
+    position: relative;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 72px 24px 64px;
+}
+
+.login__akses {
+    position: absolute; top: 24px; right: 32px;
+    display: flex; align-items: center; gap: 6px;
+    margin: 0; font-size: 11px; color: var(--teks-redup);
+}
+.login__akses .ikon { width: 12px; height: 12px; }
+
+.login__kartu { width: 100%; max-width: 440px; }
+
+.login__logo {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--oranye-muda); color: var(--oranye);
+    display: grid; place-items: center; margin-bottom: 20px;
+}
+.login__logo .ikon { width: 24px; height: 24px; }
+
+.login__label {
+    margin: 0 0 10px; font-size: 10.5px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--oranye-tua);
+}
+
+.login h1 { margin: 0 0 12px; font-size: 32px; line-height: 1.2; font-weight: 700; letter-spacing: -.01em; }
+.login__sub { margin: 0 0 28px; font-size: 14px; color: var(--teks-redup); max-width: 360px; }
+
+.login__error {
+    margin: 0 0 20px; padding: 10px 14px; font-size: 13px;
+    color: var(--error-teks); background: var(--error-bg);
+    border: 1px solid #fecaca; border-radius: 10px;
+}
+
+/* ---- Field ---- */
+.field { margin-bottom: 18px; }
+.field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+
+.input {
+    display: flex; align-items: center; gap: 10px;
+    height: 48px; padding: 0 14px;
+    background: var(--putih); color: var(--teks-redup);
+    border: 1px solid var(--garis); border-radius: 12px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.input:focus-within {
+    border-color: var(--oranye);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, .15);
+    color: var(--oranye);
+}
+.input input {
+    flex: 1; min-width: 0; height: 100%;
+    border: 0; outline: 0; background: transparent;
+    font: inherit; font-size: 14px; color: var(--teks);
+}
+.input input::placeholder { color: #a8a29e; }
+
+.input__mata {
+    display: grid; place-items: center; padding: 4px; margin-right: -4px;
+    background: none; border: 0; border-radius: 6px; cursor: pointer; color: var(--teks-redup);
+}
+.input__mata:hover { color: var(--teks); }
+.input__mata:focus-visible { outline: 2px solid var(--oranye); }
+.input__mata .ikon--mata-coret { display: none; }
+.input__mata.is-tampil .ikon--mata { display: none; }
+.input__mata.is-tampil .ikon--mata-coret { display: block; }
+
+/* ---- Ingat saya + lupa password ---- */
+.login__baris {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 4px 0 24px; font-size: 13px;
+}
+.cek { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--teks-redup); }
+.cek input { position: absolute; opacity: 0; pointer-events: none; }
+.cek__kotak {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid #cfc6bc; background: var(--putih);
+    display: grid; place-items: center; transition: background .15s, border-color .15s;
+}
+.cek input:checked + .cek__kotak { background: var(--oranye); border-color: var(--oranye); }
+.cek input:checked + .cek__kotak::after {
+    content: ''; width: 4px; height: 8px; margin-top: -2px;
+    border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.cek input:focus-visible + .cek__kotak { box-shadow: 0 0 0 3px rgba(249, 115, 22, .25); }
+
+.link-bantuan { color: var(--oranye-tua); font-weight: 600; text-decoration: none; }
+.link-bantuan:hover { text-decoration: underline; }
+
+/* ---- Tombol ---- */
+.tombol {
+    width: 100%; height: 48px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    border: 0; border-radius: 12px; cursor: pointer;
+    background: var(--oranye); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    box-shadow: 0 6px 16px rgba(249, 115, 22, .28);
+    transition: background .15s, transform .05s;
+}
+.tombol:hover { background: #ea6a0c; }
+.tombol:active { transform: translateY(1px); }
+.tombol:focus-visible { outline: 3px solid rgba(249, 115, 22, .35); outline-offset: 2px; }
+
+.login__bantuan { margin: 28px 0 0; text-align: center; font-size: 12px; color: var(--teks-redup); }
+.login__catatan {
+    margin: 12px 0 0; padding: 10px 14px; font-size: 12px; text-align: center;
+    color: var(--oranye-tua); background: var(--oranye-muda); border-radius: 10px;
+}
+
+.login__footer {
+    position: absolute; bottom: 20px; left: 0; right: 0;
+    margin: 0; text-align: center; font-size: 10px; color: var(--teks-redup);
+}
+
+@media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .hero { display: none; }
+}
+
+@media (max-width: 480px) {
+    .login { justify-content: flex-start; padding-top: 80px; }
+    .login__akses { right: 20px; }
+    .login h1 { font-size: 28px; }
+}
+
+/* ============================================================
+   HALAMAN LOGIN - panel kiri (foto) + panel kanan (form)
+   ============================================================ */
+.split { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+
+.hero {
+    position: relative; display: flex; flex-direction: column; justify-content: space-between;
+    padding: 28px 40px 40px; color: #fff; overflow: hidden;
+    /* lapisan atas -> bawah: gelap penutup, FOTO, lalu warna cadangan bila foto belum ada */
+    background:
+        linear-gradient(180deg, rgba(20,10,4,.35) 0%, rgba(20,10,4,.15) 35%, rgba(20,10,4,.88) 100%),
+        url('../img/login-hero.jpg') center / cover no-repeat,
+        radial-gradient(circle at 30% 22%, rgba(255,190,110,.55) 0 7%, transparent 18%),
+        radial-gradient(circle at 62% 30%, rgba(255,160,70,.45) 0 6%, transparent 16%),
+        radial-gradient(circle at 80% 18%, rgba(255,210,150,.35) 0 5%, transparent 14%),
+        linear-gradient(160deg, #6b3f22 0%, #3d2412 55%, #22120a 100%);
+}
+
+.hero__atas { display: flex; align-items: center; gap: 12px; }
+.hero__logo {
+    width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+    background: rgba(255,255,255,.92); color: var(--oranye);
+}
+.hero__nama { font-size: 14px; font-weight: 600; }
+
+.hero__bawah { max-width: 480px; }
+.hero__pil {
+    display: inline-flex; align-items: center; gap: 8px; margin: 0 0 20px; padding: 7px 14px;
+    font-size: 11px; border-radius: 999px;
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.hero__pil .ikon { width: 12px; height: 12px; }
+.hero__judul { margin: 0 0 14px; color: #fff; font-size: 38px; line-height: 1.15; font-weight: 700; letter-spacing: -.01em; }
+.hero__tagline { margin: 0 0 14px; font-size: 14px; white-space: nowrap; color: rgba(255,255,255,.92); }
+.hero__garis { display: block; width: 48px; height: 3px; margin-bottom: 14px; border-radius: 3px; background: var(--oranye); }
+.hero__isi { margin: 0; font-size: 12px; line-height: 1.6; color: rgba(255,255,255,.72); max-width: 340px; }
+
+@media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .hero { display: none; }
+}
