@@ -1,8 +1,10 @@
 <?php
 /**
- * auth/logout.php  (KERANGKA)
- * Untuk sementara hanya mengarahkan kembali ke halaman login.
- * Nanti ditambah: menghapus session login.
+ * auth/logout.php
+ * Menghapus session login lalu mengarahkan kembali ke halaman login.
  */
-header('Location: login.php');
-exit;
+require_once __DIR__ . '/../includes/helpers.php';
+
+$_SESSION = [];
+session_destroy();
+redirect('auth/login.php');
