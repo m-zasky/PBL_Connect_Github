@@ -64,7 +64,7 @@ $base     = '../';
         </div>
 
         <p class="login__label">Kasir &amp; Manajemen Warung</p>
-        <h1 id="judul-login">Selamat datang<br>kembali!</h1>
+        <h1 id="judul-login">Selamat datang</h1>
         <p class="login__sub">Siap melayani hari ini? Masuk ke akun Anda untuk mulai mengelola warung.</p>
 
         <?php if ($error): ?>
