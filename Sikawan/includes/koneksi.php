@@ -7,9 +7,9 @@
  */
 $host = "localhost";
 $port = "5432";
-$db   = "db_warung_sikawan";
+$db   = "db_sikawan";
 $user = "postgres";
-$pass = "...";
+$pass = "12345678";
 
 try {
     $pdo = new PDO("pgsql:host=$host;port=$port;dbname=$db", $user, $pass);
