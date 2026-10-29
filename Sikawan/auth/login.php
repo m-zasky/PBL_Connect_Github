@@ -63,7 +63,7 @@ $base     = '../';
             <svg class="ikon" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/><path d="M10 20v-4h4v4"/></svg>
         </div>
 
-        <p class="login__label">Kasir &amp; Manajemen Restoran</p>
+        <p class="login__label">Kasir &amp; Manajemen Warung</p>
         <h1 id="judul-login">Selamat datang<br>kembali!</h1>
         <p class="login__sub">Siap melayani hari ini? Masuk ke akun Anda untuk mulai mengelola warung.</p>
 
