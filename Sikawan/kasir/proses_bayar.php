@@ -11,38 +11,47 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_login();
 wajib_post('kasir/index.php');
 
-$k    = keranjang_detail($pdo);
 $opsi = opsi_pesanan();
-
-if (!$k['item']) {
-    flash_set('error', 'Keranjang masih kosong.');
-    redirect('kasir/index.php');
-}
-
-$total  = $k['total'];
 $metode = $opsi['metode'];     // 'Tunai' atau 'QRIS'
-$uang   = $total;              // QRIS dianggap pas
-
-/* ---------- 1. Validasi ---------- */
-if ($metode === 'Tunai') {
-    $uang = (int)($_POST['uang_diterima'] ?? 0);
-    if ($uang < $total) {
-        flash_set('error', 'Uang diterima kurang dari total tagihan.');
-        redirect('kasir/pembayaran.php');
-    }
-}
-
-/* ---------- 2. Simpan transaksi ---------- */
 $tipe = $opsi['tipe'] === 'Bungkus' ? 'Bungkus' : 'Dine-in';
 $meja = $tipe === 'Bungkus' ? null : $opsi['meja'];
+$tahapCheckout = 'memulai transaksi database';
 
 try {
-    $pdo->beginTransaction();   // semua query di bawah berhasil bersama, atau batal semua
+    $pdo->beginTransaction();
 
+    // Re-read and lock menu rows so price/availability cannot change during checkout.
+    $tahapCheckout = 'memvalidasi keranjang';
+    $k = keranjang_detail($pdo, true);
+    if (!$k['item']) {
+        $pdo->rollBack();
+        flash_set('error', 'Keranjang masih kosong.');
+        redirect('kasir/index.php');
+    }
+
+    $total = $k['total'];
+    $uang = $total;
+    if ($metode === 'Tunai') {
+        $uang = filter_var($_POST['uang_diterima'] ?? null, FILTER_VALIDATE_INT);
+        if ($uang === false || $uang < $total) {
+            $pdo->rollBack();
+            flash_set('error', 'Uang diterima kurang dari total tagihan.');
+            redirect('kasir/pembayaran.php');
+        }
+    }
+
+    $tahapCheckout = 'menyimpan pesanan';
     $st = $pdo->prepare(
-        "INSERT INTO pesanan (kode, tipe, meja, metode, subtotal, pajak, total, uang_diterima, catatan, kasir_id, kasir_nama)
-         VALUES ('TMP', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         RETURNING id"          // PostgreSQL mengembalikan id baru lewat RETURNING
+        "WITH nomor AS (
+             SELECT nextval(pg_get_serial_sequence('pesanan', 'id'))::integer AS id
+         )
+         INSERT INTO pesanan (id, kode, tipe, meja, metode, subtotal, pajak, total, uang_diterima, catatan, kasir_id, kasir_nama)
+         OVERRIDING SYSTEM VALUE
+         SELECT id,
+                'ORD-' || lpad(id::text, GREATEST(4, length(id::text)), '0'),
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+         FROM nomor
+         RETURNING id"
     );
     $st->execute([
         $tipe, $meja, $metode,
@@ -50,29 +59,64 @@ try {
         $opsi['catatan'] !== '' ? $opsi['catatan'] : null,
         user_login()['id'], user_login()['nama'],
     ]);
-    $pesanan_id = (int)$st->fetchColumn();   // id hasil RETURNING
+    $idTersimpan = $st->fetchColumn();
+    if ($idTersimpan === false) {
+        throw new RuntimeException('INSERT pesanan tidak mengembalikan id.');
+    }
+    $pesanan_id = (int)$idTersimpan;
 
-    // Kode pesanan dibuat dari ID, contoh ID 7 -> ORD-0007
-    $pdo->prepare('UPDATE pesanan SET kode = ? WHERE id = ?')->execute([sprintf('ORD-%04d', $pesanan_id), $pesanan_id]);
-
+    $tahapCheckout = 'menyimpan item pesanan';
     $item = $pdo->prepare('INSERT INTO pesanan_item (pesanan_id, menu_id, nama, harga, qty) VALUES (?, ?, ?, ?, ?)');
     $sold = $pdo->prepare('UPDATE menu SET terjual = terjual + ? WHERE id = ?');
     foreach ($k['baris'] as $b) {
         // Nama & harga disalin agar struk lama tidak berubah kalau menu diedit
         $item->execute([$pesanan_id, $b['menu']['id'], $b['menu']['nama'], $b['menu']['harga'], $b['qty']]);
+        $tahapCheckout = 'memperbarui jumlah menu terjual';
         $sold->execute([$b['qty'], $b['menu']['id']]);
     }
 
+    $tahapCheckout = 'menyelesaikan transaksi database';
     $pdo->commit();
 } catch (Throwable $ex) {
     if ($pdo->inTransaction()) {
-        $pdo->rollBack();
+        try {
+            $pdo->rollBack();
+        } catch (Throwable $rollbackError) {
+            error_log(sprintf(
+                'Rollback checkout gagal setelah exception %s: %s',
+                get_class($rollbackError),
+                $rollbackError->getMessage()
+            ));
+        }
     }
-    flash_set('error', 'Transaksi gagal disimpan, silakan coba lagi.');
+    $kodeError = strtoupper(bin2hex(random_bytes(3)));
+    $sqlState = $ex instanceof PDOException ? $ex->getCode() : 'N/A';
+    error_log(sprintf(
+        'Transaksi pembayaran gagal [%s] pada tahap "%s", SQLSTATE %s (%s) di %s:%d: %s',
+        $kodeError,
+        $tahapCheckout,
+        $sqlState,
+        get_class($ex),
+        $ex->getFile(),
+        $ex->getLine(),
+        $ex->getMessage()
+    ));
+    $pesanSqlState = $ex instanceof PDOException ? ' SQLSTATE: ' . $sqlState . '.' : '';
+    $petunjukDatabase = $sqlState === '25P02'
+        ? ' Transaksi database sebelumnya sudah gagal; mulai ulang Apache/PHP agar koneksi dan rencana query lama dibersihkan, lalu coba lagi.'
+        : '';
+    flash_set(
+        'error',
+        'Transaksi gagal pada tahap ' . $tahapCheckout . '. Kode: ' . $kodeError . '.' . $pesanSqlState . $petunjukDatabase . ' Periksa log PHP untuk detail.'
+    );
     redirect('kasir/pembayaran.php');
 }
 
 /* ---------- 3. Bersihkan keranjang, tampilkan struk ---------- */
 $_SESSION['keranjang'] = [];
 $_SESSION['opsi']['catatan'] = '';
-redirect('riwayat/struk.php?id=' . $pesanan_id . '&baru=1');
+$urlStruk = 'riwayat/struk.php?id=' . $pesanan_id . '&baru=1';
+if ($metode === 'QRIS') {
+    $urlStruk .= '&print=1';
+}
+redirect($urlStruk);

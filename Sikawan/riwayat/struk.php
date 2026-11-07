@@ -11,7 +11,11 @@ require_login();
 
 $id = (int)($_GET['id'] ?? 0);
 
-$st = $pdo->prepare('SELECT * FROM pesanan WHERE id = ? AND dihapus_pada IS NULL');
+$st = $pdo->prepare(
+    'SELECT id, kode, tanggal, kasir_nama, tipe, meja, subtotal, pajak, total,
+            metode, uang_diterima, catatan
+     FROM pesanan WHERE id = ? AND dihapus_pada IS NULL'
+);
 $st->execute([$id]);
 $p = $st->fetch();
 if (!$p) {
@@ -19,11 +23,14 @@ if (!$p) {
     redirect('riwayat/list.php');
 }
 
-$st = $pdo->prepare('SELECT * FROM pesanan_item WHERE pesanan_id = ? ORDER BY id');
+$st = $pdo->prepare(
+    'SELECT id, nama, harga, qty FROM pesanan_item WHERE pesanan_id = ? ORDER BY id'
+);
 $st->execute([$id]);
 $items = $st->fetchAll();
 
 $baru     = isset($_GET['baru']);
+$autoPrint = $baru && $p['metode'] === 'QRIS' && isset($_GET['print']);
 $kembalian = max(0, (int)$p['uang_diterima'] - (int)$p['total']);
 
 /** Satu baris struk: kiri-kanan. */
@@ -34,7 +41,7 @@ function baris_struk(string $kiri, string $kanan, string $kelas = ''): string
 
 $judul_halaman = 'Struk ' . $p['kode'];
 $menu_aktif    = $baru ? 'kasir' : 'riwayat';
-$kelas_body    = 'halaman-struk';
+$kelas_body    = 'halaman-struk' . ($autoPrint ? ' struk-auto-print' : '');
 require __DIR__ . '/../includes/header.php';
 ?>
 
@@ -83,7 +90,7 @@ require __DIR__ . '/../includes/header.php';
     </article>
 
     <div class="baris mt-14 noprint">
-        <button type="button" class="btn g" style="flex:1" data-cetak>🖨 Cetak Struk</button>
+        <button type="button" class="btn g" style="flex:1" data-cetak>Cetak Struk</button>
         <a class="btn" style="flex:1" href="<?= url($baru ? 'kasir/index.php' : 'riwayat/list.php') ?>">Selesai</a>
     </div>
 </section>

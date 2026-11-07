@@ -21,9 +21,17 @@ $menu_ada   = (int)$stok['ada'];
 $menu_habis = (int)$stok['habis'];
 
 // 5 menu terlaris, 5 transaksi terbaru, daftar menu habis
-$terlaris = $pdo->query('SELECT * FROM menu WHERE dihapus_pada IS NULL ORDER BY terjual DESC, nama LIMIT 6')->fetchAll();
-$terbaru  = $pdo->query('SELECT * FROM pesanan WHERE dihapus_pada IS NULL ORDER BY id DESC LIMIT 6')->fetchAll();
-$daftar_habis = $pdo->query('SELECT * FROM menu WHERE NOT tersedia AND dihapus_pada IS NULL ORDER BY nama')->fetchAll();
+$terlaris = $pdo->query(
+    'SELECT nama, kategori, harga, foto, terjual
+     FROM menu WHERE dihapus_pada IS NULL ORDER BY terjual DESC, nama LIMIT 6'
+)->fetchAll();
+$terbaru = $pdo->query(
+    'SELECT kode, tanggal, tipe, total, metode
+     FROM pesanan WHERE dihapus_pada IS NULL ORDER BY id DESC LIMIT 6'
+)->fetchAll();
+$daftar_habis = $pdo->query(
+    'SELECT nama FROM menu WHERE NOT tersedia AND dihapus_pada IS NULL ORDER BY nama'
+)->fetchAll();
 
 $judul_halaman = 'Beranda';
 $menu_aktif    = 'beranda';
@@ -36,9 +44,10 @@ require __DIR__ . '/includes/header.php';
         <span class="sm b or">● WARUNG BUKA • 08.00–21.00</span>
         <h2 id="judul-banner">Selamat <?= salam() ?>, <?= e(user_login()['nama']) ?>!</h2>
         <p class="mut">Semangat melayani! Semua aktivitas warung hari ini ada di sini.</p>
-        <a class="btn" href="<?= url('kasir/index.php') ?>">🛒 Buka Mode Kasir</a>
+        <a class="btn banner-action" href="<?= url('kasir/index.php') ?>">
+            <?= ikon_tab('kasir') ?> Buka Mode Kasir
+        </a>
     </div>
-    <div class="ph" aria-hidden="true">🍛</div>
 </section>
 
 <!-- Kartu statistik -->
@@ -73,7 +82,7 @@ require __DIR__ . '/includes/header.php';
         <?php foreach ($terlaris as $m): ?>
             <article class="card mi">
                 <?= gambar_menu($m, 'im') ?>
-                <span class="tag">🔥 Best Seller</span>
+                <span class="tag">Menu Terlaris</span>
                 <div class="bd">
                     <div class="sm mut"><?= e($m['kategori']) ?></div>
                     <b><?= e($m['nama']) ?></b>
@@ -134,7 +143,7 @@ require __DIR__ . '/includes/header.php';
                 <li class="ln"><span><?= e($m['nama']) ?></span><span class="pill x">Habis</span></li>
             <?php endforeach; ?>
             <?php if (!$daftar_habis): ?>
-                <li class="mut">Semua menu tersedia 🎉</li>
+                <li class="mut">Semua menu tersedia.</li>
             <?php endif; ?>
         </ul>
     </aside>

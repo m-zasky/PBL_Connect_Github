@@ -2,6 +2,66 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ---- Cetak laporan dan struk ----
+    document.querySelectorAll('[data-cetak]').forEach(function (tombol) {
+        tombol.addEventListener('click', function () {
+            window.print();
+        });
+    });
+
+    // QRIS yang dikonfirmasi akan langsung membuka dialog cetak struk.
+    if (document.body.classList.contains('struk-auto-print')) {
+        var urlCetak = new URL(window.location.href);
+        urlCetak.searchParams.delete('print');
+        window.history.replaceState({}, '', urlCetak.pathname + urlCetak.search + urlCetak.hash);
+        window.setTimeout(function () {
+            window.print();
+        }, 900);
+    }
+
+    // ---- Pembayaran tunai: nominal cepat dan hitung kembalian ----
+    var formBayar = document.getElementById('form-bayar');
+    var inputUang = document.getElementById('uang');
+    var outputKembalian = document.getElementById('kembalian');
+    if (formBayar && inputUang && outputKembalian) {
+        var totalTagihan = Number(formBayar.dataset.total);
+        var formatRupiah = function (nilai) {
+            return 'Rp' + Math.max(0, Math.round(nilai)).toLocaleString('id-ID');
+        };
+        var perbaruiKembalian = function () {
+            var nilai = inputUang.value === '' ? NaN : Number(inputUang.value);
+            outputKembalian.classList.remove('payment-short');
+            if (!Number.isFinite(nilai)) {
+                outputKembalian.textContent = '-';
+            } else if (nilai < totalTagihan) {
+                outputKembalian.textContent = 'Kurang ' + formatRupiah(totalTagihan - nilai);
+                outputKembalian.classList.add('payment-short');
+            } else {
+                outputKembalian.textContent = formatRupiah(nilai - totalTagihan);
+            }
+        };
+
+        document.querySelectorAll('[data-uang]').forEach(function (tombol) {
+            tombol.addEventListener('click', function () {
+                inputUang.value = tombol.dataset.uang;
+                document.querySelectorAll('[data-uang]').forEach(function (pilihan) {
+                    pilihan.classList.toggle('on', pilihan === tombol);
+                    pilihan.setAttribute('aria-pressed', pilihan === tombol ? 'true' : 'false');
+                });
+                perbaruiKembalian();
+            });
+        });
+
+        inputUang.addEventListener('input', function () {
+            document.querySelectorAll('[data-uang]').forEach(function (tombol) {
+                var terpilih = tombol.dataset.uang === inputUang.value;
+                tombol.classList.toggle('on', terpilih);
+                tombol.setAttribute('aria-pressed', terpilih ? 'true' : 'false');
+            });
+            perbaruiKembalian();
+        });
+    }
+
     // ---- Halaman login: tampilkan / sembunyikan password ----
     var tombolMata = document.getElementById('toggle-password');
     var inputPass  = document.getElementById('password');

@@ -28,8 +28,15 @@ if ($error) {
 }
 
 // 3) Simpan ke database
-$st = $pdo->prepare('INSERT INTO menu (nama, kategori, harga, foto, emoji, terjual, tersedia) VALUES (?, ?, ?, ?, ?, 0, ?)');   // kolom tersedia bertipe BOOLEAN
-$st->execute([$d['nama'], $d['kategori'], (int)$d['harga'], $foto, emoji_kategori($d['kategori']), $d['tersedia'] ? 'true' : 'false']);
+$st = $pdo->prepare('INSERT INTO menu (nama, kategori, harga, foto, terjual, tersedia) VALUES (?, ?, ?, ?, 0, ?)');
+try {
+    $st->execute([$d['nama'], $d['kategori'], (int)$d['harga'], $foto, $d['tersedia'] ? 'true' : 'false']);
+} catch (Throwable $ex) {
+    hapus_foto($foto);
+    error_log('Gagal menambahkan menu: ' . $ex->getMessage());
+    flash_set('error', 'Menu gagal disimpan. Silakan coba lagi.');
+    redirect('menu/tambah.php');
+}
 
 flash_set('ok', 'Menu baru ditambahkan ✔');
 redirect('menu/list.php');

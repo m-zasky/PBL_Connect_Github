@@ -10,7 +10,10 @@ require_admin();
 wajib_post('menu/list.php');
 
 $id = (int)($_POST['id'] ?? 0);
-$st = $pdo->prepare('SELECT * FROM menu WHERE id = ? AND dihapus_pada IS NULL');
+$st = $pdo->prepare(
+    'SELECT id, nama, kategori, harga, foto, tersedia
+     FROM menu WHERE id = ? AND dihapus_pada IS NULL'
+);
 $st->execute([$id]);
 $menu = $st->fetch();
 if (!$menu) {
@@ -38,8 +41,21 @@ if ($error) {
 }
 
 // 3) Update database
-$st = $pdo->prepare('UPDATE menu SET nama = ?, kategori = ?, harga = ?, foto = ?, emoji = ?, tersedia = ? WHERE id = ?');
-$st->execute([$d['nama'], $d['kategori'], (int)$d['harga'], $foto, emoji_kategori($d['kategori']), $d['tersedia'] ? 'true' : 'false', $id]);
+$st = $pdo->prepare('UPDATE menu SET nama = ?, kategori = ?, harga = ?, foto = ?, tersedia = ? WHERE id = ?');
+try {
+    $st->execute([$d['nama'], $d['kategori'], (int)$d['harga'], $foto, $d['tersedia'] ? 'true' : 'false', $id]);
+} catch (Throwable $ex) {
+    if ($foto !== $menu['foto']) {
+        hapus_foto($foto);
+    }
+    error_log('Gagal memperbarui menu: ' . $ex->getMessage());
+    flash_set('error', 'Perubahan menu gagal disimpan. Silakan coba lagi.');
+    redirect($balik);
+}
+
+if ($foto !== $menu['foto']) {
+    hapus_foto($menu['foto']);
+}
 
 // Menu yang ditandai habis otomatis keluar dari keranjang
 if (!$d['tersedia']) {

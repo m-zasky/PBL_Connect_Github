@@ -51,12 +51,12 @@ require __DIR__ . '/../includes/header.php';
         <?= csrf_field() ?>
 
         <?php if ($metode === 'Tunai'): ?>
-            <label class="fl" for="uang">Uang diterima</label>
+            <label class="fl" for="uang">Uang Diterima</label>
             <input id="uang" name="uang_diterima" class="fi" type="number" min="0" inputmode="numeric" placeholder="0" required>
 
             <div class="pm" style="grid-template-columns:repeat(auto-fit,minmax(90px,1fr))">
                 <?php foreach ($cepat as $n): ?>
-                    <button type="button" data-uang="<?= $n ?>"><?= $n === $total ? 'Uang pas' : rupiah($n) ?></button>
+                    <button type="button" data-uang="<?= (int)$n ?>" aria-pressed="false"><?= $n === $total ? 'Uang pas' : rupiah($n) ?></button>
                 <?php endforeach; ?>
             </div>
 
@@ -81,15 +81,15 @@ require __DIR__ . '/../includes/header.php';
                     <p class="qris-total"><?= rupiah($total) ?></p>
                     <p class="sm" style="color:#666">
                         Berlaku <b id="qris-timer" data-detik="600">10:00</b>
-                        <a id="qris-ulang" href="" hidden>Buat ulang kode</a>
+                        <a id="qris-ulang" href="" hidden>Buat Ulang Kode</a>
                     </p>
-                    <span class="qris-tanda">SIMULASI • bukan transaksi sungguhan</span>
+                    <span class="qris-tanda"></span>
                 </div>
                 <figcaption class="qris-foot">
-                    Scan dengan GoPay, OVO, DANA, ShopeePay, LinkAja, atau m-banking
+                    Scan dengan GoPay, OVO, DANA, ShopeePay, LinkAja, atau M-Banking
                 </figcaption>
             </figure>
-            <p class="sm mut teks-tengah">Minta pelanggan scan, lalu konfirmasi setelah pembayaran masuk.</p>
+            <p class="sm mut teks-tengah">Minta Pelanggan Scan, Lalu Konfirmasi Setelah Pembayaran Masuk.</p>
         <?php endif; ?>
 
         <div class="baris" style="justify-content:flex-end;margin-top:8px">

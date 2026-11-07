@@ -8,10 +8,11 @@ require_once __DIR__ . '/../includes/helpers.php';
 
 // Sudah login? Langsung ke halaman sesuai role-nya.
 if (!empty($_SESSION['user'])) {
-    redirect(halaman_awal($_SESSION['user']['role']));
+    redirect('index.php');
 }
 
-$error    = flash_get('error');
+$flash    = flash_ambil();
+$error    = ($flash['jenis'] ?? null) === 'error' ? ($flash['pesan'] ?? '') : '';
 $username = $_COOKIE['ingat_username'] ?? '';   // terisi jika sebelumnya centang "Ingat saya"
 $base     = '../';
 ?>
@@ -33,8 +34,8 @@ $base     = '../';
 <!-- Panel kiri: foto + tagline. Ganti foto di assets/img/login-bg.jpg -->
 <aside class="hero" aria-label="Warung Sambel Orek Tugu 17">
     <div class="hero__merek">
-        <span class="hero__logo" aria-hidden="true">
-            <svg class="ikon" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/><path d="M10 20v-4h4v4"/></svg>
+        <span class="hero__logo">
+            <img src="<?= $base ?>assets/img/logo-warung.svg" alt="">
         </span>
         Warung Sambel Orek Tugu 17
     </div>
@@ -53,14 +54,9 @@ $base     = '../';
 
 <main class="login">
 
-    <p class="login__akses">
-        <svg class="ikon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        Akses khusus staf
-    </p>
-
     <section class="login__kartu" aria-labelledby="judul-login">
-        <div class="login__logo" aria-hidden="true">
-            <svg class="ikon" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/><path d="M10 20v-4h4v4"/></svg>
+        <div class="login__logo">
+            <img src="<?= $base ?>assets/img/logo-warung.svg" alt="Logo Warung Sambel Orek Tugu 17">
         </div>
 
         <p class="login__label">Kasir &amp; Manajemen Warung</p>
@@ -72,6 +68,7 @@ $base     = '../';
         <?php endif; ?>
 
         <form action="proses_login.php" method="post">
+            <?= csrf_field() ?>
             <div class="field">
                 <label for="username">Username</label>
                 <div class="input">

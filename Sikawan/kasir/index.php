@@ -32,7 +32,10 @@ $total_hal   = max(1, (int)ceil($total_menu / $per_hal));
 $halaman     = min($halaman, $total_hal);
 $offset      = ($halaman - 1) * $per_hal;            // sudah berupa integer, aman dipakai langsung di SQL
 
-$st = $pdo->prepare("SELECT * FROM menu $sql_where ORDER BY id LIMIT $per_hal OFFSET $offset");
+$st = $pdo->prepare(
+    "SELECT id, nama, kategori, harga, foto, tersedia
+     FROM menu $sql_where ORDER BY id LIMIT $per_hal OFFSET $offset"
+);
 $st->execute($params);
 $tampil = $st->fetchAll();
 
@@ -69,7 +72,7 @@ require __DIR__ . '/../includes/header.php';
 
         <!-- Form pencarian (GET) -->
         <form class="inp mt-14" action="index.php" method="get" role="search">
-            <span aria-hidden="true">🔍</span>
+            <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
             <label for="q" class="sr-only">Cari menu</label>
             <input id="q" type="search" name="q" placeholder="Cari nama menu favorit pelanggan..." value="<?= e($cari) ?>">
             <?php if ($kategori !== 'Semua'): ?><input type="hidden" name="kategori" value="<?= e($kategori) ?>"><?php endif; ?>
@@ -134,10 +137,10 @@ require __DIR__ . '/../includes/header.php';
 
             <!-- Tipe pesanan -->
             <div class="seg" role="radiogroup" aria-label="Tipe pesanan">
-                <?php foreach (['Makan di tempat' => '🍴', 'Bungkus' => '🛍'] as $t => $ik): ?>
+                <?php foreach (['Makan di tempat', 'Bungkus'] as $t): ?>
                     <label>
                         <input type="radio" name="tipe" value="<?= e($t) ?>" data-tipe <?= $opsi['tipe'] === $t ? 'checked' : '' ?>>
-                        <span><?= $ik ?> <?= e($t) ?></span>
+                        <span><?= e($t) ?></span>
                     </label>
                 <?php endforeach; ?>
             </div>

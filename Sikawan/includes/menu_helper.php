@@ -91,15 +91,21 @@ function simpan_foto(array $file, ?string $fotoLama): array
         $dst = imagecreatetruecolor(240, 128);
         imagefill($dst, 0, 0, imagecolorallocate($dst, 255, 255, 255));   // latar putih untuk PNG transparan
         imagecopyresampled($dst, $src, 0, 0, (int)(($w - $sw) / 2), (int)(($h - $sh) / 2), 240, 128, (int)$sw, (int)$sh);
-        imagejpeg($dst, $folder . $nama . '.jpg', 75);
+        $berhasil = imagejpeg($dst, $folder . $nama . '.jpg', 75);
+        imagedestroy($src);
+        imagedestroy($dst);
+        if (!$berhasil) {
+            return [$fotoLama, 'Foto gagal disimpan.'];
+        }
         $nama .= '.jpg';
     } else {
         // Tanpa GD: simpan apa adanya
         $nama .= '.' . $boleh[$info['mime']];
-        move_uploaded_file($file['tmp_name'], $folder . $nama);
+        if (!move_uploaded_file($file['tmp_name'], $folder . $nama)) {
+            return [$fotoLama, 'Foto gagal disimpan.'];
+        }
     }
 
-    hapus_foto($fotoLama);   // buang foto lama supaya folder tidak menumpuk
     return [$nama, null];
 }
 

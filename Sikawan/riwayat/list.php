@@ -8,8 +8,17 @@ require_once __DIR__ . '/../includes/koneksi.php';
 require_once __DIR__ . '/../includes/helpers.php';
 require_login();
 
-$daftar = $pdo->query('SELECT * FROM pesanan WHERE dihapus_pada IS NULL ORDER BY id DESC LIMIT 500')->fetchAll();
-$rekap  = $pdo->query('SELECT COUNT(*) AS jml, COALESCE(SUM(total),0) AS total, COALESCE(SUM(pajak),0) AS pajak FROM pesanan WHERE dihapus_pada IS NULL')->fetch();
+$daftar = $pdo->query(
+    'SELECT id, kode, tanggal, kasir_nama, tipe, metode, subtotal, pajak, total
+     FROM pesanan WHERE dihapus_pada IS NULL ORDER BY id DESC'
+)->fetchAll();
+$rekap  = $pdo->query(
+    "SELECT COUNT(*) AS jml, COALESCE(SUM(subtotal),0) AS subtotal,
+            COALESCE(SUM(total),0) AS total, COALESCE(SUM(pajak),0) AS pajak,
+            COUNT(*) FILTER (WHERE metode = 'Tunai') AS tunai,
+            COUNT(*) FILTER (WHERE metode = 'QRIS') AS qris
+     FROM pesanan WHERE dihapus_pada IS NULL"
+)->fetch();
 
 $judul_halaman = 'Riwayat Transaksi';
 $menu_aktif    = 'riwayat';
@@ -29,8 +38,23 @@ require __DIR__ . '/../includes/header.php';
                 <button type="submit" class="btn o">Kosongkan Riwayat</button>
             </form>
         <?php endif; ?>
-        <button type="button" class="btn g" data-cetak>🖨 Cetak Laporan</button>
+        <button type="button" class="btn g" data-cetak>Cetak Laporan</button>
     </div>
+</section>
+
+<section class="report-print-header" aria-label="Informasi laporan">
+    <p class="report-print-brand">WARUNG SAMBEL OREK TUGU 17</p>
+    <h1>Laporan Transaksi Penjualan</h1>
+    <p>Periode: Seluruh transaksi aktif</p>
+    <p>Dicetak pada: <?= e(date('d-m-Y H:i')) ?> WIB</p>
+</section>
+
+<section class="report-summary" aria-label="Ringkasan laporan">
+    <div><span>Jumlah transaksi</span><b><?= (int)$rekap['jml'] ?></b></div>
+    <div><span>Subtotal penjualan</span><b><?= rupiah($rekap['subtotal']) ?></b></div>
+    <div><span>Total pajak</span><b><?= rupiah($rekap['pajak']) ?></b></div>
+    <div><span>Total omzet</span><b><?= rupiah($rekap['total']) ?></b></div>
+    <div><span>Tunai / QRIS</span><b><?= (int)$rekap['tunai'] ?> / <?= (int)$rekap['qris'] ?></b></div>
 </section>
 
 <section class="card scroll-x mt-20" aria-label="Tabel transaksi">
@@ -63,17 +87,10 @@ require __DIR__ . '/../includes/header.php';
             </tr>
         <?php endforeach; ?>
         <?php if (!$daftar): ?>
-            <tr><td colspan="5" class="mut">Belum ada transaksi.</td></tr>
+            <tr><td colspan="5" class="mut">Belum ada transaksi pada periode laporan.</td></tr>
         <?php endif; ?>
         </tbody>
     </table>
 </section>
-
-<aside class="card mt-14 baris" style="padding:16px;background:var(--soft)">
-    <span>Total <?= (int)$rekap['jml'] ?> transaksi
-        <span class="sm mut" style="display:block">Termasuk pajak <?= rupiah($rekap['pajak']) ?></span>
-    </span>
-    <b class="tot"><?= rupiah($rekap['total']) ?></b>
-</aside>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

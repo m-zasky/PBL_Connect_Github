@@ -9,6 +9,13 @@ date_default_timezone_set('Asia/Jakarta');
 
 // Mulai session sekali saja (dipakai untuk login, keranjang, dan pesan flash)
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'path' => '/',
+        'httponly' => true,
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'samesite' => 'Lax',
+    ]);
+    ini_set('session.use_strict_mode', '1');
     session_start();
 }
 
@@ -100,20 +107,18 @@ function salam(): string
     return 'Malam';
 }
 
-/** Emoji bawaan tiap kategori (dipakai kalau menu tidak punya foto). */
-function emoji_kategori(string $kategori): string
-{
-    return ['Makanan' => '🍛', 'Minuman' => '🥤', 'Snack' => '🍟', 'Paket' => '🍱'][$kategori] ?? '🍛';
-}
-
-/** Membuat kotak gambar menu: foto kalau ada, kalau tidak emoji. */
+/** Menampilkan foto menu, atau foto representatif untuk kategorinya. */
 function gambar_menu(array $m, string $kelas = 'im'): string
 {
-    if (!empty($m['foto'])) {
-        $src = url('assets/img/menu/' . rawurlencode($m['foto']));
-        return '<div class="' . e($kelas) . '" role="img" aria-label="' . e($m['nama']) . '" style="background-image:url(' . e($src) . ')"></div>';
-    }
-    return '<div class="' . e($kelas) . '" aria-hidden="true">' . e($m['emoji']) . '</div>';
+    $fotoDefault = [
+        'Makanan' => 'ayam.jpg',
+        'Minuman' => 'teh.jpg',
+        'Snack' => 'pisang.jpg',
+        'Paket' => 'nasi Goreng.jpg',
+    ];
+    $foto = !empty($m['foto']) ? $m['foto'] : ($fotoDefault[$m['kategori']] ?? 'ayam.jpg');
+    $src = url('assets/img/menu/' . rawurlencode($foto));
+    return '<div class="' . e($kelas) . '" role="img" aria-label="' . e($m['nama']) . '" style="background-image:url(' . e($src) . ')"></div>';
 }
 
 /* ------------------------------------------------------------
@@ -174,8 +179,12 @@ function csrf_field(): string
  */
 function wajib_post(string $kembali = 'index.php'): void
 {
-    $ok = $_SERVER['REQUEST_METHOD'] === 'POST'
-        && hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf'] ?? '');
+    $tokenSesi = $_SESSION['csrf'] ?? '';
+    $tokenForm = $_POST['csrf'] ?? '';
+    $ok = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+        && is_string($tokenSesi) && $tokenSesi !== ''
+        && is_string($tokenForm) && $tokenForm !== ''
+        && hash_equals($tokenSesi, $tokenForm);
     if (!$ok) {
         flash_set('error', 'Permintaan tidak valid atau sesi form sudah kedaluwarsa. Silakan ulangi.');
         redirect($kembali);
@@ -199,7 +208,7 @@ function sudah_login(): bool
 
 function adalah_admin(): bool
 {
-    return sudah_login() && user_login()['role'] === 'Admin';
+    return sudah_login() && strtolower((string)user_login()['role']) === 'admin';
 }
 
 /** Halaman wajib login; kalau belum, lempar ke halaman login. */
@@ -224,14 +233,27 @@ function require_admin(): void
 function daftar_tab(): array
 {
     $tab = [
-        'kasir'   => ['Kasir', '🛒', 'kasir/index.php'],
-        'beranda' => ['Beranda', '▦', 'index.php'],
-        'riwayat' => ['Riwayat', '🕘', 'riwayat/list.php'],
+        'kasir'   => ['Kasir', 'kasir/index.php'],
+        'beranda' => ['Beranda', 'index.php'],
+        'riwayat' => ['Riwayat', 'riwayat/list.php'],
     ];
     if (adalah_admin()) {
-        $tab['menu'] = ['Kelola Menu', '🍴', 'menu/list.php'];
+        $tab['menu'] = ['Kelola Menu', 'menu/list.php'];
     }
     return $tab;
+}
+
+/** Ikon navigasi berbasis SVG agar konsisten dan tidak bergantung emoji/font. */
+function ikon_tab(string $kunci): string
+{
+    $jalur = [
+        'kasir' => '<path d="M3 4h2l2.2 11h10.9l2-8H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>',
+        'beranda' => '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
+        'riwayat' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        'menu' => '<path d="M4 20h16M6 17h12l-1-8H7l-1 8Z"/><path d="M9 9c0-2 1-3 3-5 2 2 3 3 3 5"/>',
+    ];
+    return '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+        . ($jalur[$kunci] ?? '') . '</svg>';
 }
 
 /* ------------------------------------------------------------
@@ -259,7 +281,7 @@ function opsi_pesanan(): array
  * Menu yang sudah dihapus / ditandai habis otomatis dikeluarkan.
  * Return: ['baris' => [...], 'item' => int, 'subtotal' => int, 'pajak' => int, 'total' => int]
  */
-function keranjang_detail(PDO $pdo): array
+function keranjang_detail(PDO $pdo, bool $kunciBaris = false): array
 {
     $keranjang = $_SESSION['keranjang'] ?? [];
     $baris = [];
@@ -269,7 +291,10 @@ function keranjang_detail(PDO $pdo): array
     if ($keranjang) {
         $ids = array_keys($keranjang);
         $in  = implode(',', array_fill(0, count($ids), '?'));
-        $st  = $pdo->prepare("SELECT * FROM menu WHERE id IN ($in)");
+        $st  = $pdo->prepare(
+            "SELECT id, nama, kategori, harga, foto, terjual, tersedia, dihapus_pada
+             FROM menu WHERE id IN ($in) ORDER BY id" . ($kunciBaris ? ' FOR UPDATE' : '')
+        );
         $st->execute($ids);
         $menu = [];
         foreach ($st->fetchAll() as $m) {

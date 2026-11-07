@@ -28,14 +28,16 @@ $kelas_body  = $kelas_body ?? '';
 <body class="<?= e($kelas_body) ?>">
 
 <header>
-    <div class="logo" aria-hidden="true">👨‍🍳</div>
+    <a class="logo" href="<?= url('index.php') ?>" aria-label="Warung Sambel Orek Tugu 17 - Beranda">
+        <img src="<?= url('assets/img/logo-warung.svg') ?>" alt="">
+    </a>
     <h1>Warung Sambel Orek Tugu 17</h1>
 
     <!-- Navigasi utama (desktop) -->
     <nav aria-label="Menu utama">
-        <?php foreach (daftar_tab() as $kunci => [$label, $ikon, $tujuan]): ?>
+        <?php foreach (daftar_tab() as $kunci => [$label, $tujuan]): ?>
             <a href="<?= url($tujuan) ?>" class="<?= $menu_aktif === $kunci ? 'on' : '' ?>"
-               <?= $menu_aktif === $kunci ? 'aria-current="page"' : '' ?>><?= $ikon ?> <?= e($label) ?></a>
+               <?= $menu_aktif === $kunci ? 'aria-current="page"' : '' ?>><?= ikon_tab($kunci) ?> <?= e($label) ?></a>
         <?php endforeach; ?>
     </nav>
 
@@ -49,8 +51,10 @@ $kelas_body  = $kelas_body ?? '';
             <b><?= e($user['nama']) ?></b>
             <div class="sm mut"><?= e($user['role']) ?></div>
         </div>
-        <a class="av" href="<?= url('auth/logout.php') ?>" title="Keluar" aria-label="Keluar"
-           data-konfirmasi="Keluar dari sistem?">👤</a>
+        <form action="<?= url('auth/logout.php') ?>" method="post">
+            <?= csrf_field() ?>
+            <button class="av" type="submit" title="Keluar" aria-label="Keluar"><?= e(mb_substr($user['nama'], 0, 1)) ?></button>
+        </form>
     </div>
 </header>
 

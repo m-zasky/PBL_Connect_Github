@@ -2,8 +2,7 @@
 /**
  * auth/proses_login.php
  * Memeriksa username & password dari form login.
- * Berhasil -> simpan data user ke session lalu ke halaman sesuai role:
- *             Admin -> Beranda, Kasir -> Mode Kasir.
+ * Berhasil -> simpan data user ke session lalu menuju Beranda.
  * Gagal    -> kembali ke login dengan pesan error.
  */
 require_once __DIR__ . '/../includes/koneksi.php';
@@ -11,8 +10,10 @@ require_once __DIR__ . '/../includes/helpers.php';
 
 wajib_post('auth/login.php');
 
-$username = trim($_POST['username'] ?? '');
-$password = $_POST['password'] ?? '';
+$usernameInput = $_POST['username'] ?? '';
+$passwordInput = $_POST['password'] ?? '';
+$username = is_string($usernameInput) ? trim($usernameInput) : '';
+$password = is_string($passwordInput) ? $passwordInput : '';
 $ingat    = isset($_POST['ingat']);
 
 // Cari user berdasarkan username (prepared statement -> aman dari SQL injection)
@@ -39,9 +40,21 @@ $_SESSION['user'] = [
 
 // "Ingat saya": simpan username saja (bukan password) selama 30 hari agar form terisi otomatis
 if ($ingat) {
-    setcookie('ingat_username', $user['username'], time() + 60 * 60 * 24 * 30, BASE_URL, '', false, true);
+    setcookie('ingat_username', $user['username'], [
+        'expires' => time() + 60 * 60 * 24 * 30,
+        'path' => BASE_URL !== '' ? BASE_URL : '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
 } else {
-    setcookie('ingat_username', '', time() - 3600, BASE_URL);
+    setcookie('ingat_username', '', [
+        'expires' => time() - 3600,
+        'path' => BASE_URL !== '' ? BASE_URL : '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
 }
 
-redirect(halaman_awal($role));
+redirect('index.php');

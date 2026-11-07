@@ -8,7 +8,10 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_admin();
 
 $id = (int)($_GET['id'] ?? 0);
-$st = $pdo->prepare('SELECT * FROM menu WHERE id = ? AND dihapus_pada IS NULL');
+$st = $pdo->prepare(
+    'SELECT id, nama, kategori, harga, foto, tersedia
+     FROM menu WHERE id = ? AND dihapus_pada IS NULL'
+);
 $st->execute([$id]);
 $menu = $st->fetch();
 

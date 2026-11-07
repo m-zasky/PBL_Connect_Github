@@ -4,7 +4,7 @@
  * Form tambah / edit menu yang dipakai bersama (supaya tidak menulis HTML dua kali).
  *
  * Variabel dari halaman pemanggil:
- *   $m           -> data menu (id, nama, kategori, harga, foto, emoji, tersedia)
+ *   $m           -> data menu (id, nama, kategori, harga, foto, tersedia)
  *   $aksi        -> URL tujuan form (proses_tambah.php / proses_edit.php)
  *   $judul_form  -> judul kartu
  *   $teks_tombol -> teks tombol simpan

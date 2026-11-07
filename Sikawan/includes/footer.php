@@ -15,9 +15,9 @@
 
 <!-- Navigasi bawah (mobile) -->
 <nav class="bnav" aria-label="Menu mobile">
-    <?php foreach (daftar_tab() as $kunci => [$label, $ikon, $tujuan]): ?>
+    <?php foreach (daftar_tab() as $kunci => [$label, $tujuan]): ?>
         <a href="<?= url($tujuan) ?>" class="<?= ($menu_aktif ?? '') === $kunci ? 'on' : '' ?>">
-            <div style="font-size:18px" aria-hidden="true"><?= $ikon ?></div><?= e($label) ?>
+            <?= ikon_tab($kunci) ?><?= e($label) ?>
         </a>
     <?php endforeach; ?>
 </nav>

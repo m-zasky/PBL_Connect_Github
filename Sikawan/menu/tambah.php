@@ -9,7 +9,7 @@ require_admin();
 
 // Nilai awal form; kalau validasi sebelumnya gagal, pakai isian lama (old_ambil)
 $m = array_merge(
-    ['id' => 0, 'nama' => '', 'kategori' => 'Makanan', 'harga' => '', 'foto' => null, 'emoji' => emoji_kategori('Makanan'), 'tersedia' => 1],
+    ['id' => 0, 'nama' => '', 'kategori' => 'Makanan', 'harga' => '', 'foto' => null, 'tersedia' => 1],
     old_ambil()
 );
 

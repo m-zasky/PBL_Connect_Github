@@ -18,7 +18,10 @@ try {
     // Parameter sslmode=require wajib ditambahkan agar koneksi ke cloud tidak ditolak
     $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
     
-    $pdo = new PDO($dsn, $user, $pass);
+    $pdo = new PDO($dsn, $user, $pass, [
+        // Avoid stale server-side prepared plans when the PostgreSQL schema changes.
+        PDO::ATTR_EMULATE_PREPARES => true,
+    ]);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);       
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);  
     $pdo->exec("SET TIME ZONE 'Asia/Jakarta'");                          

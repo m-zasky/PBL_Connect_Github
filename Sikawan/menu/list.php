@@ -7,7 +7,10 @@ require_once __DIR__ . '/../includes/koneksi.php';
 require_once __DIR__ . '/../includes/helpers.php';
 require_admin();
 
-$daftar = $pdo->query('SELECT * FROM menu WHERE dihapus_pada IS NULL ORDER BY id')->fetchAll();
+$daftar = $pdo->query(
+    'SELECT id, nama, kategori, harga, foto, terjual, tersedia
+     FROM menu WHERE dihapus_pada IS NULL ORDER BY id'
+)->fetchAll();
 $total  = count($daftar);
 $ada    = count(array_filter($daftar, fn($m) => $m['tersedia']));
 
