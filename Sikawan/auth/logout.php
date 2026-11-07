@@ -1,7 +1,7 @@
 <?php
 /**
  * auth/logout.php
- * Menghapus session login lalu mengarahkan kembali ke halaman login.
+ * Menghapus seluruh data session (login + keranjang) lalu kembali ke halaman login.
  */
 require_once __DIR__ . '/../includes/helpers.php';
 
