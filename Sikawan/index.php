@@ -20,10 +20,13 @@ $stok = $pdo->query('SELECT COUNT(*) FILTER (WHERE tersedia) AS ada, COUNT(*) FI
 $menu_ada   = (int)$stok['ada'];
 $menu_habis = (int)$stok['habis'];
 
-// 5 menu terlaris, 5 transaksi terbaru, daftar menu habis
+// 6 menu dengan jumlah terjual terbanyak, 6 transaksi terbaru, daftar menu habis
 $terlaris = $pdo->query(
     'SELECT nama, kategori, harga, foto, terjual
-     FROM menu WHERE dihapus_pada IS NULL ORDER BY terjual DESC, nama LIMIT 6'
+     FROM menu
+     WHERE dihapus_pada IS NULL AND terjual > 0
+     ORDER BY terjual DESC, nama
+     LIMIT 6'
 )->fetchAll();
 $terbaru = $pdo->query(
     'SELECT kode, tanggal, tipe, total, metode
@@ -77,7 +80,7 @@ require __DIR__ . '/includes/header.php';
 <!-- Menu terlaris -->
 <section aria-labelledby="judul-terlaris">
     <h2 id="judul-terlaris" class="judul-seksi">Menu Terlaris &amp; Favorit</h2>
-    <p class="sm mut">Paling sering bikin pelanggan kembali.</p>
+    <p class="sm mut">Diurutkan Berdasarkan Jumlah Porsi yang Berhasil Terjual.</p>
     <div class="favs">
         <?php foreach ($terlaris as $m): ?>
             <article class="card mi">
@@ -93,6 +96,9 @@ require __DIR__ . '/includes/header.php';
                 </div>
             </article>
         <?php endforeach; ?>
+        <?php if (!$terlaris): ?>
+            <p class="mut">Belum Ada Menu yang Terjual. Menu Terlaris Akan Muncul Setelah Transaksi Berhasil.</p>
+        <?php endif; ?>
     </div>
 </section>
 
