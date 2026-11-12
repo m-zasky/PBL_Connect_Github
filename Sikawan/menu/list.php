@@ -9,7 +9,7 @@ require_admin();
 
 $daftar = $pdo->query(
     'SELECT id, nama, kategori, harga, foto, terjual, tersedia
-     FROM menu WHERE dihapus_pada IS NULL ORDER BY id'
+     FROM menu WHERE dihapus_pada IS NULL ORDER BY id DESC'
 )->fetchAll();
 $total  = count($daftar);
 $ada    = count(array_filter($daftar, fn($m) => $m['tersedia']));
@@ -77,14 +77,14 @@ require __DIR__ . '/../includes/header.php';
 </section>
 
 <aside class="card mt-14" style="padding:16px">
-    <h3 style="margin:0;font-size:14px">Aturan pengelolaan menu</h3>
+    <h3 style="margin:0;font-size:14px">Aturan Pengelolaan Menu</h3>
     <ul class="sm mut" style="margin:8px 0 0;padding-left:18px;line-height:1.8">
-        <li>Nama menu wajib diisi dan tidak boleh sama dengan menu lain.</li>
-        <li>Harga minimal Rp500 dan berupa kelipatan Rp500.</li>
-        <li>Menu berstatus <b>Habis</b> tidak bisa dipilih di halaman Kasir dan otomatis keluar dari keranjang.</li>
-        <li>Tombol <b>Hapus</b> hanya menyembunyikan menu dari tampilan (soft delete). Datanya tetap tersimpan di database untuk arsip dan audit.</li>
-        <li>Mengubah harga hanya berlaku untuk pesanan berikutnya. Transaksi lama di Riwayat tidak berubah.</li>
-        <li>Foto bersifat opsional dan akan dikecilkan otomatis.</li>
+        <li>Nama Menu Wajib Diisi dan Tidak Boleh Sama Dengan Menu Lain.</li>
+        <li>Harga Minimal Rp500 dan Berupa Kelipatan Rp500.</li>
+        <li>Menu Berstatus <b>Habis</b> Tidak Bisa Dipilih di Halaman Kasir dan Otomatis Keluar Dari Keranjang.</li>
+        <li>Tombol <b>Hapus</b> Hanya Menyembunyikan Menu Dari Tampilan (Soft Delete). Datanya Tetap Tersimpan di Database Untuk Arsip dan Audit.</li>
+        <li>Mengubah Harga Hanya Berlaku Untuk Pesanan Berikutnya. Transaksi Lama di Riwayat Tidak Berubah.</li>
+        <li>Foto Bersifat Opsional dan Akan Dikecilkan Otomatis.</li>
     </ul>
 </aside>
 
