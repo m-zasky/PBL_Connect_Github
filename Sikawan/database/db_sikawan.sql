@@ -1,6 +1,6 @@
--- Sikawan PostgreSQL schema.
--- Safe to run more than once: this script does not drop tables or data.
--- CREATE TABLE IF NOT EXISTS does not migrate arbitrary existing schemas.
+-- Skema basis data Sikawan untuk PostgreSQL.
+-- Aman dijalankan berulang kali: skrip ini tidak menghapus tabel atau data.
+-- CREATE TABLE IF NOT EXISTS tidak otomatis memperbarui semua skema lama.
 
 BEGIN;
 
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS pesanan (
     )
 );
 
--- Keep this compatible with older installations that used VARCHAR(12).
+-- Menyesuaikan instalasi lama yang sebelumnya memakai VARCHAR(12).
 ALTER TABLE pesanan
     ALTER COLUMN kode TYPE VARCHAR(20);
 
@@ -73,3 +73,96 @@ CREATE INDEX IF NOT EXISTS ix_pesanan_item_pesanan_id
     ON pesanan_item (pesanan_id);
 
 COMMIT;
+
+-- ============================================================
+-- CONTOH LAPORAN RIWAYAT PESANAN BULAN BERJALAN
+-- ============================================================
+
+-- Contoh menampilkan daftar menu yang belum dihapus.
+SELECT
+    id        AS "ID Menu",
+    nama      AS "Nama Menu",
+    kategori  AS "Kategori",
+    harga     AS "Harga",
+    tersedia  AS "Tersedia",
+    terjual   AS "Jumlah Terjual"
+FROM menu
+WHERE dihapus_pada IS NULL
+ORDER BY id;
+
+-- 1. Daftar pesanan aktif bulan ini (satu baris per pesanan).
+WITH periode AS (
+    SELECT
+        date_trunc('month', CURRENT_DATE::timestamp) AS mulai,
+        date_trunc('month', CURRENT_DATE::timestamp) + INTERVAL '1 month' AS sampai
+),
+pesanan_bulan_ini AS (
+    SELECT p.*
+    FROM pesanan AS p
+    CROSS JOIN periode AS pr
+    WHERE p.dihapus_pada IS NULL
+      AND p.tanggal >= pr.mulai
+      AND p.tanggal < pr.sampai
+)
+SELECT
+    p.kode          AS "Kode Pesanan",
+    p.tanggal       AS "Tanggal dan Waktu",
+    p.kasir_nama    AS "Nama Kasir",
+    p.tipe          AS "Tipe Pesanan",
+    p.meja          AS "Nomor Meja",
+    p.metode        AS "Metode Pembayaran",
+    p.subtotal      AS "Subtotal",
+    p.pajak         AS "Pajak",
+    p.total         AS "Total",
+    p.uang_diterima AS "Uang Diterima",
+    p.catatan       AS "Catatan"
+FROM pesanan_bulan_ini AS p
+ORDER BY p.tanggal, p.id;
+
+-- 2. Ringkasan jumlah dan nilai pesanan aktif bulan ini.
+WITH periode AS (
+    SELECT
+        date_trunc('month', CURRENT_DATE::timestamp) AS mulai,
+        date_trunc('month', CURRENT_DATE::timestamp) + INTERVAL '1 month' AS sampai
+),
+pesanan_bulan_ini AS (
+    SELECT p.*
+    FROM pesanan AS p
+    CROSS JOIN periode AS pr
+    WHERE p.dihapus_pada IS NULL
+      AND p.tanggal >= pr.mulai
+      AND p.tanggal < pr.sampai
+)
+SELECT
+    COUNT(*)                   AS "Jumlah Transaksi",
+    COALESCE(SUM(subtotal), 0) AS "Total Subtotal",
+    COALESCE(SUM(pajak), 0)    AS "Total Pajak",
+    COALESCE(SUM(total), 0)    AS "Total Omzet"
+FROM pesanan_bulan_ini;
+
+-- 3. Rincian item pesanan bulan ini (satu baris per item).
+-- Total pesanan dapat berulang untuk beberapa item dalam pesanan yang sama.
+WITH periode AS (
+    SELECT
+        date_trunc('month', CURRENT_DATE::timestamp) AS mulai,
+        date_trunc('month', CURRENT_DATE::timestamp) + INTERVAL '1 month' AS sampai
+),
+pesanan_bulan_ini AS (
+    SELECT p.*
+    FROM pesanan AS p
+    CROSS JOIN periode AS pr
+    WHERE p.dihapus_pada IS NULL
+      AND p.tanggal >= pr.mulai
+      AND p.tanggal < pr.sampai
+)
+SELECT
+    p.kode            AS "Kode Pesanan",
+    p.tanggal         AS "Tanggal dan Waktu",
+    p.kasir_nama      AS "Nama Kasir",
+    pi.nama           AS "Nama Menu",
+    pi.harga          AS "Harga Satuan",
+    pi.qty            AS "Jumlah",
+    pi.harga * pi.qty AS "Total Item"
+FROM pesanan_bulan_ini AS p
+JOIN pesanan_item AS pi ON pi.pesanan_id = p.id
+ORDER BY p.tanggal, p.id, pi.id;
