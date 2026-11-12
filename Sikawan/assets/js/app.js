@@ -2,6 +2,24 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ---- Tipe pesanan: tampilkan meja hanya untuk makan di tempat ----
+    var pilihanTipe = document.querySelectorAll('[data-tipe]');
+    var bagianMeja = document.getElementById('pilih-meja');
+    var pilihanMeja = document.getElementById('meja');
+    if (pilihanTipe.length && bagianMeja && pilihanMeja) {
+        var perbaruiPilihanMeja = function () {
+            var tipeTerpilih = document.querySelector('[data-tipe]:checked');
+            var bungkus = tipeTerpilih && tipeTerpilih.value === 'Bungkus';
+            bagianMeja.hidden = bungkus;
+            pilihanMeja.disabled = bungkus;
+        };
+
+        pilihanTipe.forEach(function (pilihan) {
+            pilihan.addEventListener('change', perbaruiPilihanMeja);
+        });
+        perbaruiPilihanMeja();
+    }
+
     // ---- Cetak laporan dan struk ----
     document.querySelectorAll('[data-cetak]').forEach(function (tombol) {
         tombol.addEventListener('click', function () {
