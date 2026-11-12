@@ -39,6 +39,28 @@ $st = $pdo->prepare(
 $st->execute($params);
 $tampil = $st->fetchAll();
 
+if (($_GET['ajax'] ?? '') === 'menu') {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'menu' => array_map(static function (array $m): array {
+            return [
+                'id' => (int)$m['id'],
+                'nama' => $m['nama'],
+                'kategori' => $m['kategori'],
+                'harga' => (int)$m['harga'],
+                'tersedia' => in_array($m['tersedia'], [true, 1, '1', 't', 'true'], true),
+                'jumlah_dipilih' => (int)($_SESSION['keranjang'][$m['id']] ?? 0),
+                'gambar' => gambar_menu($m, 'im'),
+            ];
+        }, $tampil),
+        'total' => $total_menu,
+        'halaman' => $halaman,
+        'total_halaman' => $total_hal,
+        'per_halaman' => $per_hal,
+    ], JSON_THROW_ON_ERROR);
+    exit;
+}
+
 // Jumlah menu per kategori (angka kecil di tombol kategori)
 $jumlah = ['Semua' => 0];
 foreach ($pdo->query('SELECT kategori, COUNT(*) AS n FROM menu WHERE dihapus_pada IS NULL GROUP BY kategori') as $r) {
@@ -71,7 +93,7 @@ require __DIR__ . '/../includes/header.php';
         <p class="mut">Pilih menu, layani dengan hati.</p>
 
         <!-- Form pencarian (GET) -->
-        <form class="inp mt-14" action="index.php" method="get" role="search">
+        <form id="cari-menu" class="inp mt-14" action="index.php" method="get" role="search">
             <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
             <label for="q" class="sr-only">Cari menu</label>
             <input id="q" type="search" name="q" placeholder="Cari nama menu favorit pelanggan..." value="<?= e($cari) ?>">
@@ -81,11 +103,13 @@ require __DIR__ . '/../includes/header.php';
         <!-- Filter kategori -->
         <nav class="chips" aria-label="Kategori menu">
             <?php foreach (array_merge(['Semua'], KATEGORI) as $c): ?>
-                <a class="chip <?= $kategori === $c ? 'on' : '' ?>" href="<?= e(link_kasir(['kategori' => $c === 'Semua' ? null : $c])) ?>">
+                <a class="chip <?= $kategori === $c ? 'on' : '' ?>" data-kategori="<?= e($c) ?>" href="<?= e(link_kasir(['kategori' => $c === 'Semua' ? null : $c])) ?>">
                     <?= e($c) ?> <span class="sm"><?= $jumlah[$c] ?? 0 ?></span>
                 </a>
             <?php endforeach; ?>
         </nav>
+
+        <p id="status-menu" class="sm mut" role="status" aria-live="polite" hidden></p>
 
         <!-- Kartu menu -->
         <div class="grid">
@@ -116,7 +140,7 @@ require __DIR__ . '/../includes/header.php';
             <span class="sm mut" style="flex:1;align-self:center">Menampilkan <?= count($tampil) ?> dari <?= $total_menu ?> menu</span>
             <?php for ($i = 1; $i <= $total_hal; $i++): ?>
                 <a class="<?= $i === $halaman ? 'on' : '' ?>" href="<?= e(link_kasir(['hal' => $i > 1 ? $i : null])) ?>"
-                   <?= $i === $halaman ? 'aria-current="page"' : '' ?>><?= $i ?></a>
+                   data-halaman="<?= $i ?>" <?= $i === $halaman ? 'aria-current="page"' : '' ?>><?= $i ?></a>
             <?php endfor; ?>
         </nav>
     </section>
