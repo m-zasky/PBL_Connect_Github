@@ -35,7 +35,7 @@ $base     = '../';
 <aside class="hero" aria-label="Warung Sambel Orek Tugu 17">
     <div class="hero__merek">
         <span class="hero__logo">
-            <img src="<?= $base ?>assets/img/logo-warung.svg" alt="">
+            <img src="<?= $base ?>assets/img/logo/logo-warung.png" alt="">
         </span>
         Warung Sambel Orek Tugu 17
     </div>
@@ -56,7 +56,7 @@ $base     = '../';
 
     <section class="login__kartu" aria-labelledby="judul-login">
         <div class="login__logo">
-            <img src="<?= $base ?>assets/img/logo-warung.svg" alt="Logo Warung Sambel Orek Tugu 17">
+            <img src="<?= $base ?>assets/img/logo/logo-warung.png" alt="Logo Warung Sambel Orek Tugu 17">
         </div>
 
         <p class="login__label">Kasir &amp; Manajemen Warung</p>

@@ -29,7 +29,7 @@ $kelas_body  = $kelas_body ?? '';
 
 <header>
     <a class="logo" href="<?= url('index.php') ?>" aria-label="Warung Sambel Orek Tugu 17 - Beranda">
-        <img src="<?= url('assets/img/logo-warung.svg') ?>" alt="">
+        <img src="<?= url('assets/img/logo/logo-warung.png') ?>" alt="">
     </a>
     <h1>Warung Sambel Orek Tugu 17</h1>
 

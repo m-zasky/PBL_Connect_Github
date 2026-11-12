@@ -99,18 +99,20 @@ button {
 .logo {
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border-radius: 50%;
     display: grid;
     place-items: center;
     overflow: hidden;
     flex: none;
+    background: var(--or);
     box-shadow: 0 3px 10px rgba(194, 65, 12, .18)
 }
 
 .logo img {
     display: block;
     width: 100%;
-    height: 100%
+    height: 100%;
+    border-radius: inherit
 }
 
 /* login */
@@ -291,7 +293,7 @@ footer {
     overflow: hidden;
     background:
         linear-gradient(90deg, rgba(42, 24, 15, .84) 0%, rgba(42, 24, 15, .68) 48%, rgba(42, 24, 15, .22) 100%),
-        url("../img/login/login page.jpeg") center 58% / cover no-repeat;
+        url("../img/login/login page-2.jpeg") center 58% / cover no-repeat;
     border-radius: 20px;
     padding: 30px;
     display: flex;
@@ -1405,7 +1407,7 @@ main#login {
     padding: clamp(28px, 5vw, 64px);
     background:
         linear-gradient(180deg, rgba(25, 16, 11, .12) 0%, rgba(25, 16, 11, .18) 35%, rgba(25, 16, 11, .84) 100%),
-        url("../img/login/login page.jpeg") center / cover no-repeat;
+        url("../img/login/login page-2.jpeg") center / cover no-repeat;
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -1440,7 +1442,7 @@ main#login {
     place-items: center;
     width: 44px;
     height: 44px;
-    border-radius: 14px;
+    border-radius: 50%;
     background: var(--or);
     color: #fff;
     box-shadow: 0 8px 20px rgba(194, 65, 12, .22)
@@ -1549,7 +1551,7 @@ main#login {
     width: 52px;
     height: 52px;
     margin-bottom: 14px;
-    border-radius: 16px
+    border-radius: 50%
 }
 
 .login__label {

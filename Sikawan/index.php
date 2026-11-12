@@ -41,7 +41,7 @@ require __DIR__ . '/includes/header.php';
 <!-- Banner sambutan -->
 <section class="banner" aria-labelledby="judul-banner">
     <div>
-        <span class="sm b or">● WARUNG BUKA • 08.00–21.00</span>
+        <span class="sm b or">● WARUNG BUKA • 05.30–15.30</span>
         <h2 id="judul-banner">Selamat <?= salam() ?>, <?= e(user_login()['nama']) ?>!</h2>
         <p class="mut">Semangat melayani! Semua aktivitas warung hari ini ada di sini.</p>
         <a class="btn banner-action" href="<?= url('kasir/index.php') ?>">
