@@ -19,7 +19,7 @@ $kelas_body  = $kelas_body ?? '';
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta name="color-scheme" content="light">
     <title><?= e($judul_halaman) ?> - Warung Sambel Orek Tugu 17</title>
     <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">

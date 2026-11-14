@@ -34,71 +34,133 @@ $menu_aktif    = 'kasir';
 require __DIR__ . '/../includes/header.php';
 ?>
 
-<section class="card md tengah" aria-labelledby="judul-bayar">
-    <h2 id="judul-bayar" class="judul-seksi">Pembayaran <?= e($metode) ?></h2>
+<section class="payment-page <?= $metode === 'QRIS' ? 'payment-page--qris' : 'payment-page--cash' ?>" aria-labelledby="judul-bayar">
+    <div class="page-header">
+        <div>
+            <h2 id="judul-bayar" class="page-title">Pembayaran <?= e($metode) ?></h2>
+            <p class="page-subtitle"><?= $metode === 'QRIS' ? 'Tampilkan kode QR kepada pelanggan untuk menyelesaikan pembayaran.' : 'Masukkan uang yang diterima untuk menyelesaikan pembayaran.' ?></p>
+        </div>
+        <div class="page-meta">
+            <span>♧</span>
+            <span><?= $opsi['tipe'] === 'Bungkus' ? 'Bungkus' : 'Dine-in · ' . e($opsi['meja']) ?></span>
+        </div>
+    </div>
 
-    <!-- Ringkasan tagihan -->
-    <p class="ln mt-10 mut"><span><?= $k['item'] ?> item • <?= e(label_layanan($opsi)) ?></span></p>
-    <ul class="sm" style="list-style:none;margin:0;padding:0">
-        <?php foreach ($k['baris'] as $b): ?>
-            <li class="ln"><span><?= $b['qty'] ?> × <?= e($b['menu']['nama']) ?></span><span><?= rupiah($b['jumlah']) ?></span></li>
-        <?php endforeach; ?>
-    </ul>
-    <p class="ln" style="align-items:center"><b>Total tagihan</b><span class="tot"><?= rupiah($total) ?></span></p>
+    <?php if ($metode === 'Tunai'): ?>
+        <div class="cash-payment-card panel">
+            <h2 class="cash-title">Pembayaran Tunai</h2>
+            <div class="cash-subtitle"><?= $k['item'] ?> item · <?= e(label_layanan($opsi)) ?></div>
 
-    <form id="form-bayar" action="proses_bayar.php" method="post"
-          data-total="<?= $total ?>" data-metode="<?= e($metode) ?>">
-        <?= csrf_field() ?>
-
-        <?php if ($metode === 'Tunai'): ?>
-            <label class="fl" for="uang">Uang Diterima</label>
-            <input id="uang" name="uang_diterima" class="fi" type="number" min="0" inputmode="numeric" placeholder="0" required>
-
-            <div class="pm" style="grid-template-columns:repeat(auto-fit,minmax(90px,1fr))">
-                <?php foreach ($cepat as $n): ?>
-                    <button type="button" data-uang="<?= (int)$n ?>" aria-pressed="false"><?= $n === $total ? 'Uang pas' : rupiah($n) ?></button>
+            <div class="cash-order-lines">
+                <?php foreach ($k['baris'] as $b): ?>
+                    <div class="cash-row">
+                        <span><?= $b['qty'] ?> × <?= e($b['menu']['nama']) ?></span>
+                        <strong><?= rupiah($b['jumlah']) ?></strong>
+                    </div>
                 <?php endforeach; ?>
+                <div class="cash-row">
+                    <span>Subtotal</span>
+                    <strong><?= rupiah($k['subtotal']) ?></strong>
+                </div>
+                <div class="cash-row">
+                    <span>Pajak <?= PAJAK_PERSEN ?>%</span>
+                    <strong><?= rupiah($k['pajak']) ?></strong>
+                </div>
+                <div class="cash-total-row">
+                    <b>Total tagihan</b>
+                    <strong><?= rupiah($total) ?></strong>
+                </div>
             </div>
 
-            <p class="ln" style="font-size:16px">
-                <span>Kembalian</span>
-                <output id="kembalian" class="b" for="uang">-</output>
-            </p>
+            <form id="form-bayar" action="proses_bayar.php" method="post" data-total="<?= $total ?>" data-metode="<?= e($metode) ?>">
+                <?= csrf_field() ?>
+                <label class="field-label" for="uang">Uang diterima</label>
+                <input id="uang" name="uang_diterima" class="amount-input" type="number" min="0" inputmode="numeric" placeholder="0" required>
 
-        <?php else: ?>
-            <!-- Kartu QRIS simulasi -->
-            <figure class="qris-card" style="margin-left:auto;margin-right:auto">
-                <div class="qris-head">
-                    <b>QRIS</b>
-                    <span>Quick Response Code Indonesian Standard</span>
+                <div class="quick-pay cash-quick-pay">
+                    <?php foreach ($cepat as $n): ?>
+                        <button type="button" class="quick-pay__item" data-uang="<?= (int)$n ?>" aria-pressed="false"><?= $n === $total ? 'Uang pas' : rupiah($n) ?></button>
+                    <?php endforeach; ?>
                 </div>
-                <div class="qris-body">
-                    <p class="qris-merchant">WARUNG SAMBEL OREK TUGU 17</p>
-                    <p class="sm" style="color:#666">NMID: ID1020304050607</p>
-                    <div class="qris-qr">
+
+                <div class="change-row">
+                    <span>Kembalian</span>
+                    <output id="kembalian" class="change-amount" for="uang">Rp0</output>
+                </div>
+
+                <div class="form-actions cash-actions">
+                    <a class="btn btn--ghost" href="index.php">Batal</a>
+                    <button type="submit" class="btn" id="btn-bayar">Selesaikan Pembayaran</button>
+                </div>
+            </form>
+        </div>
+    <?php else: ?>
+        <div class="payment-layout payment-layout--qris">
+            <div class="panel panel-main">
+                <div class="panel-title-row">
+                    <h3>QRIS</h3>
+                    <span class="qr-label">Quick Response Code Indonesian Standard</span>
+                </div>
+
+                <div class="qris-payment-card">
+                    <div class="qris-merchant">WARUNG SAMBEL OREK TUGU 17</div>
+                    <div class="qris-code">NMID: ID1020304050607</div>
+
+                    <div class="qris-qr-shell">
                         <img src="<?= url('assets/img/qris/qris.png') ?>" alt="Kode QRIS Warung Sambel Orek Tugu 17">
                     </div>
-                    <p class="qris-total"><?= rupiah($total) ?></p>
-                    <p class="sm" style="color:#666">
-                        Berlaku <b id="qris-timer" data-detik="600">10:00</b>
-                        <a id="qris-ulang" href="" hidden>Buat Ulang Kode</a>
-                    </p>
-                    <span class="qris-tanda"></span>
-                </div>
-                <figcaption class="qris-foot">
-                    Scan dengan GoPay, OVO, DANA, ShopeePay, LinkAja, atau M-Banking
-                </figcaption>
-            </figure>
-            <p class="sm mut teks-tengah">Minta Pelanggan Scan, Lalu Konfirmasi Setelah Pembayaran Masuk.</p>
-        <?php endif; ?>
 
-        <div class="baris" style="justify-content:flex-end;margin-top:8px">
-            <a class="btn g" href="index.php">Batal</a>
-            <button type="submit" class="btn" id="btn-bayar">
-                <?= $metode === 'QRIS' ? 'Pembayaran Diterima' : 'Selesaikan Pembayaran' ?>
-            </button>
+                    <div class="qris-total"><?= rupiah($total) ?></div>
+                </div>
+
+                <p class="qris-note">Scan dengan GoPay, OVO, DANA, ShopeePay, LinkAja,<br>atau m-banking</p>
+            </div>
+
+            <aside class="qris-sidebar">
+                <div class="panel panel-summary">
+                    <div class="summary-box">
+                        <div class="summary-header">
+                            <span class="summary-header__title">Ringkasan pesanan</span>
+                            <span class="summary-header__count"><?= $k['item'] ?> item</span>
+                        </div>
+
+                        <div class="summary-service"><?= $k['item'] ?> item · <?= e(label_layanan($opsi)) ?></div>
+                        <?php foreach ($k['baris'] as $b): ?>
+                            <div class="summary-line">
+                                <span><?= $b['qty'] ?> × <?= e($b['menu']['nama']) ?></span>
+                                <strong><?= rupiah($b['jumlah']) ?></strong>
+                            </div>
+                        <?php endforeach; ?>
+
+                        <div class="summary-line summary-line--muted">
+                            <span>Subtotal</span>
+                            <strong><?= rupiah($k['subtotal']) ?></strong>
+                        </div>
+                        <div class="summary-line summary-line--muted">
+                            <span>Pajak <?= PAJAK_PERSEN ?>%</span>
+                            <strong><?= rupiah($k['pajak']) ?></strong>
+                        </div>
+                        <div class="summary-line summary-line--total">
+                            <span>Total tagihan</span>
+                            <strong><?= rupiah($total) ?></strong>
+                        </div>
+                    </div>
+
+                    <div class="status-box status-box--waiting">
+                        <span class="status-indicator"></span>
+                        <span>Menunggu pembayaran</span>
+                    </div>
+                    <p class="qris-status-note">Minta pelanggan scan, lalu konfirmasi setelah pembayaran masuk.</p>
+
+                    <form id="form-bayar" action="proses_bayar.php" method="post" data-total="<?= $total ?>" data-metode="<?= e($metode) ?>">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn--full" id="btn-bayar">Pembayaran Diterima</button>
+                        <a class="btn btn--ghost btn--full qris-cancel" href="index.php">Batal</a>
+                    </form>
+                </div>
+            </aside>
         </div>
-    </form>
+    <?php endif; ?>
 </section>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

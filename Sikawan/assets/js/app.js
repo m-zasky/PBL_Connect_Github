@@ -1,5 +1,18 @@
 /* assets/js/app.js - JavaScript sederhana untuk seluruh halaman */
 
+// Lock zoom in/out while keeping the browser's reset-to-100% shortcut available.
+document.addEventListener('keydown', function (event) {
+    if ((event.ctrlKey || event.metaKey) && ['+', '-', '=', '_'].indexOf(event.key) !== -1) {
+        event.preventDefault();
+    }
+}, true);
+
+document.addEventListener('wheel', function (event) {
+    if (event.ctrlKey) {
+        event.preventDefault();
+    }
+}, { passive: false });
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ---- Pencarian menu langsung tanpa memuat ulang halaman ----
