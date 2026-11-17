@@ -16,9 +16,7 @@ $pass = "npg_JMqPpk7BeL2b";
 
 try {
     // Parameter sslmode=require wajib ditambahkan agar koneksi ke cloud tidak ditolak
-    $endpoint = "ep-quiet-grass-az2l7jlo"; // nama host tanpa "-pooler" dan tanpa ".c-3...."
-
-    $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require;options='endpoint=$endpoint'";
+    $dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
     
     $pdo = new PDO($dsn, $user, $pass, [
         // Avoid stale server-side prepared plans when the PostgreSQL schema changes.
