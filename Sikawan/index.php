@@ -48,7 +48,7 @@ require __DIR__ . '/includes/header.php';
         <h2 id="judul-banner">Selamat <?= salam() ?>, <?= e(user_login()['nama']) ?>!</h2>
         <p class="mut">Semangat melayani! Semua aktivitas warung hari ini ada di sini.</p>
         <a class="btn banner-action" href="<?= url('kasir/index.php') ?>">
-            <?= ikon_tab('kasir') ?> Buka Mode Kasir
+            <?= ikon_tab('kasir') ?> layani pelanggan
         </a>
     </div>
 </section>
